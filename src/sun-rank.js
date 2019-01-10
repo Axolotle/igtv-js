@@ -2,7 +2,7 @@ import {deg_to_rad} from './utils.js';
 
 function sunVariables(rank) {
     // anomalie moyenne en rad
-    const M = deg_to_rad(356.8 + (360 / 365.2425) * (rank));
+    const M = deg_to_rad(356.8 + (360 / 365.2425) * (rank - 1));
     // équation du centre (influence de l'ellipticité de l'orbite terrestre) en deg
     const C = 1.91378 * Math.sin(M) + 0.02 * Math.sin(2 * M)
     // longitude vraie du Soleil en rad
@@ -18,18 +18,17 @@ function sunVariables(rank) {
     }
 }
 
-export default function sunRiseSetFromRank(longitude, latitude, rank) {
-    console.log(longitude, latitude, rank);
-    const {EOT, SDEC} = sunVariables(rank);
+export default function sunRiseSetFromRank(longitude, latitude, date) {
+    const {EOT, SDEC} = sunVariables(date.toRankInYear());
 
     // angle horaire du Soleil en rad
-    const HO = Math.acos(
+    const H0 = Math.acos(
         (-0.01454 - Math.sin(SDEC) * Math.sin(deg_to_rad(latitude)))
         / (Math.cos(SDEC) * Math.cos(deg_to_rad(latitude)))
     ) / deg_to_rad(15);
 
     return {
-        sunrise: 12 - HO + EOT / 60 + longitude / 15,
-        sunset: 12 + HO + EOT / 60 + longitude / 15
+        sunrise: 12 - H0 + EOT / 60 + longitude / 15,
+        sunset: 12 + H0 + EOT / 60 + longitude / 15
     }
 }
