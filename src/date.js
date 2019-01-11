@@ -9,9 +9,9 @@ export default class ExtraDate extends Date {
      * @returns {number} floating point number
      */
     getDecimalHour() {
-        let hours = this.isUTC ? this.getUTCHours() : this.getHours();
-        let minutes = this.isUTC ? this.getUTCMinutes() : this.getMinutes();
-        let seconds = this.isUTC ? this.getUTCSeconds() : this.getSeconds();
+        let hours = this.getUTCHours();
+        let minutes = this.getUTCMinutes();
+        let seconds = this.getUTCSeconds();
 
         return hours + (minutes / 60) + (seconds / 3600);
     }
@@ -21,9 +21,9 @@ export default class ExtraDate extends Date {
      * @returns {number} floating point number
      */
     toRankInYear() {
-        const year = this.isUTC ? date.getUTCFullYear() : this.getFullYear();
-        const month = this.isUTC ? this.getUTCMonth() + 1 : this.getMonth() + 1;
-        const day = this.isUTC ? this.getUTCDate() : this.getDate();
+        const year = this.getUTCFullYear();
+        const month = this.getUTCMonth() + 1;
+        const day = this.getUTCDate();
 
         const N1 = Math.trunc(month * 275 / 9);
         const N2 = Math.trunc((month + 9) / 12);
@@ -43,9 +43,9 @@ export default class ExtraDate extends Date {
         // milliseconds in a day (86400000 = 24 * 60 * 60 * 1000) will give the
         // floating point number of days since this epoch.
         let DaysSinceJSEpoch = this.getTime() / 86400000;
-        // if date is not UTC, substract the offset divided by the number of
-        // minutes in a day (1440 = 24 * 60)
-        if (!this.isUTC) DaysSinceJSEpoch -= this.getTimezoneOffset() / 1440;
+        // Since the date may not be UTC, substract the offset divided by the
+        // number of minutes in a day (1440 = 24 * 60)
+        DaysSinceJSEpoch -= this.getTimezoneOffset() / 1440;
 
         // Adds the number of days from Julian Epoch to JS Epoch
         return DaysSinceJSEpoch + 2440587.5;
@@ -59,9 +59,9 @@ export default class ExtraDate extends Date {
      * @returns {number} julian day (JD) as a floating point (with hours)
      */
     toJulianDay(gregorian=true) {
-        let year = this.getFullYear();
-        let month = this.getMonth() + 1;
-        let day = this.getDate() + this.getDecimalHour() / 24;
+        let year = this.getUTCFullYear();
+        let month = this.getUTCMonth() + 1;
+        let day = this.getUTCDate() + this.getDecimalHour() / 24;
         if (month <= 2) {
             year += -1;
             month += 12;
@@ -72,5 +72,15 @@ export default class ExtraDate extends Date {
         return Math.trunc(365.25 * (year + 4716))
                + Math.trunc(30.6001 * (month + 1))
                + day + B - 1524.5;
+    }
+
+    //
+    /**
+     * Returns the number of Julian centuries since Jan 1, 2000, 0 GMT
+     * @returns {number} julian centuries (T)
+     */
+    toJulianCenturies() {
+        const EPOCH = 2451545;
+        return (this.toJulianDay() - EPOCH) / 36525;
     }
 }
